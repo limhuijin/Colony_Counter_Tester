@@ -2,10 +2,9 @@ import numpy as np
 from PIL import Image, ImageDraw
 import matplotlib.pyplot as plt
 import tensorflow as tf
-import os
 
 # 모델 로드
-model_path = 'C:/Users/gabri/Desktop/coding/Colony_Counter_Tester/model/colony_detector_model_02.keras'
+model_path = 'C:/Users/gabri/Desktop/coding/Colony_Counter_Tester/model/colony_detector_model_03.keras'
 model = tf.keras.models.load_model(model_path)
 
 # 콜로니 검출 및 시각화 함수
@@ -40,20 +39,5 @@ def detect_and_visualize(image_path, model):
     plt.show()
 
 # 예시 이미지 경로
-image_base_path = 'C:/Users/gabri/Desktop/coding/Colony_Counter_Tester/images'
-image_filenames = [
-    'colony_01.png',
-]
-
-# 이미지 파일 이름 리스트에서 이미지가 존재하는 첫 번째 경로 사용
-example_image_path = None
-for filename in image_filenames:
-    path = os.path.join(image_base_path, filename)
-    if os.path.exists(path):
-        example_image_path = path
-        break
-
-if example_image_path:
-    detect_and_visualize(example_image_path, model)
-else:
-    print("No valid image found in the specified paths.")
+example_image_path = 'C:/Users/gabri/Desktop/coding/Colony_Counter_Tester/images/colony_01.png'
+detect_and_visualize(example_image_path, model)
