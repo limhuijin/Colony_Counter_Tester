@@ -1,10 +1,10 @@
 import numpy as np
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFont
 import matplotlib.pyplot as plt
 import tensorflow as tf
 
 # 모델 로드
-model_path = 'C:/Users/gabri/Desktop/coding/Colony_Counter_Tester/model/colony_detector_model_03.keras'
+model_path = 'C:/Users/gabri/Desktop/coding/Colony_Counter_Tester/model/colony_detector_model_04.keras'
 model = tf.keras.models.load_model(model_path)
 
 # 콜로니 검출 및 시각화 함수
@@ -15,28 +15,44 @@ def detect_and_visualize(image_path, model):
     image_array = np.expand_dims(image_array, axis=0)
 
     predictions = model.predict(image_array)
-    bbox = predictions[0]
     
-    # bounding box 좌표를 원래 이미지 크기에 맞게 변환
-    img_width, img_height = original_image.size
-    bbox = [
-        bbox[0] * img_width,
-        bbox[1] * img_height,
-        bbox[2] * img_width,
-        bbox[3] * img_height
-    ]
+    # 다수의 bounding box를 예측한다고 가정
+    bboxes = predictions[0].reshape(-1, 4)
 
-    # 원래 이미지에 bounding box 시각화
     draw = ImageDraw.Draw(original_image)
-    draw.rectangle(
-        [bbox[0], bbox[1], bbox[0] + bbox[2], bbox[1] + bbox[3]],
-        outline="red",
-        width=3
-    )
+    font = ImageFont.load_default()
 
+    # bounding box 좌표를 원래 이미지 크기에 맞게 변환 및 시각화
+    img_width, img_height = original_image.size
+    for bbox in bboxes:
+        x, y, width, height = bbox
+        x = x * img_width
+        y = y * img_height
+        width = width * img_width
+        height = height * img_height
+
+        draw.rectangle(
+            [x, y, x + width, y + height],
+            outline="red",
+            width=3
+        )
+
+        # 좌표 표시
+        draw.text((x, y), f"({x:.0f}, {y:.0f})", fill="red", font=font)
+
+    # 검출된 콜로니 좌표 출력
+    for bbox in bboxes:
+        x, y, width, height = bbox
+        x = x * img_width
+        y = y * img_height
+        width = width * img_width
+        height = height * img_height
+        print(f"Detected colony bounding box coordinates: [{x:.2f}, {y:.2f}, {width:.2f}, {height:.2f}]")
+        
     plt.imshow(original_image)
     plt.axis('off')  # 축 숨기기
     plt.show()
+
 
 # 예시 이미지 경로
 example_image_path = 'C:/Users/gabri/Desktop/coding/Colony_Counter_Tester/images/colony_01.png'

@@ -23,7 +23,7 @@ with open(file_path, 'r', encoding='utf-8') as file:
 df = pd.json_normalize(data)
 
 # 이미지와 라벨 데이터를 로드하는 함수
-def load_data(df, image_dir):
+def load_data(df, image_dir, max_objects=10):
     images = []
     labels = []
     for index, row in df.iterrows():
@@ -51,7 +51,11 @@ def load_data(df, image_dir):
             if labels_list:
                 annotations = labels_list[0].get('annotations', {})
                 objects = annotations.get('objects', [])
+                object_count = 0
+                bbox_list = []
                 for colony in objects:
+                    if object_count >= max_objects:
+                        break
                     bounding_box = colony.get('bounding_box', {})
                     top = bounding_box.get('top', 0)
                     left = bounding_box.get('left', 0)
@@ -65,7 +69,15 @@ def load_data(df, image_dir):
                         width / 100,
                         height / 100
                     ]
-                    labels.append(bbox)
+                    bbox_list.extend(bbox)
+                    object_count += 1
+                
+                # 최대 개수에 맞춰서 부족한 bounding box는 0으로 채움
+                while object_count < max_objects:
+                    bbox_list.extend([0, 0, 0, 0])
+                    object_count += 1
+
+                labels.append(bbox_list)
         except Exception as e:
             print(f"Error processing image {image_path}: {e}")
     
@@ -81,7 +93,7 @@ if len(train_images) == 0:
     print("No images loaded. Please check the data loading process.")
 else:
     # 딥러닝 모델 생성
-    def create_model():
+    def create_model(max_objects=10):
         model = Sequential([
             Conv2D(32, (3, 3), activation='relu', input_shape=(224, 224, 3)),
             MaxPooling2D(2, 2),
@@ -91,7 +103,7 @@ else:
             MaxPooling2D(2, 2),
             Flatten(),
             Dense(512, activation='relu'),
-            Dense(4, activation='sigmoid')  # bounding box output: [x, y, width, height]
+            Dense(max_objects * 4, activation='sigmoid')  # 각 객체에 대해 4개의 bounding box output
         ])
         
         model.compile(optimizer=Adam(), loss='mean_squared_error')
@@ -102,7 +114,7 @@ else:
 
     # 모델 학습
     if len(train_labels) > 0:
-        model.fit(train_images, train_labels, epochs=50, batch_size=32, validation_split=0.2)
+        model.fit(train_images, train_labels, epochs=10, batch_size=32, validation_split=0.2)
         # 모델 저장
         model_save_path = 'C:/Users/gabri/Desktop/coding/Colony_Counter_Tester/model/colony_detector_model.keras'
         tf.keras.models.save_model(model, model_save_path)
