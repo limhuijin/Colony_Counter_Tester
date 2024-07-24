@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import tensorflow as tf
 
 # 모델 로드
-model_path = 'C:/Users/gabri/Desktop/coding/Colony_Counter_Tester/model/colony_detector_model_04.keras'
+model_path = 'C:/Users/gabri/Desktop/coding/Colony_Counter_Tester/model/colony_detector_model_05.keras'
 model = tf.keras.models.load_model(model_path)
 
 # 콜로니 검출 및 시각화 함수

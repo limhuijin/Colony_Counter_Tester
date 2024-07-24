@@ -114,7 +114,7 @@ else:
 
     # 모델 학습
     if len(train_labels) > 0:
-        model.fit(train_images, train_labels, epochs=10, batch_size=32, validation_split=0.2)
+        model.fit(train_images, train_labels, epochs=100, batch_size=32, validation_split=0.2)
         # 모델 저장
         model_save_path = 'C:/Users/gabri/Desktop/coding/Colony_Counter_Tester/model/colony_detector_model.keras'
         tf.keras.models.save_model(model, model_save_path)
